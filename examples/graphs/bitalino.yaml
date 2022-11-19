@@ -1,0 +1,39 @@
+graphs:
+
+  - id: acquisition
+    nodes:
+
+    # Bitalino driver
+    # ---------------
+    - id: bitalino
+      module: timeflux_bitalino.nodes.driver
+      class: Bitalino
+      params:
+        port: /dev/tty.BITalino-4F-08-DevB
+        rate: 100
+        sensors:
+          A1: EEG
+
+    # Select ECG channels
+    # -------------------
+    - id: select
+      module: timeflux.nodes.query
+      class: LocQuery
+      params:
+        key: [A1_EEG]
+
+    # Publish 
+    # -------
+    - id: pub_raw
+      module: timeflux.nodes.zmq
+      class: Pub
+      params:
+        topic: eeg
+
+    edges:
+     - source: bitalino
+       target: select
+     - source: select
+       target: pub_raw 
+
+    rate: 0

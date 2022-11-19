@@ -1,0 +1,65 @@
+import:
+  - graphs/bitalino.yaml # BITalino device
+  - graphs/save.yaml # save the data into Hdf5
+
+graphs:
+
+- id: broker
+  nodes:
+    - id: broker
+      module: timeflux.nodes.zmq
+      class: Broker
+
+- id: handpose
+  nodes:
+    - id: camera
+      module: timeflux_vision.nodes.handpose
+      class: HandPose
+
+    - id: pub
+      module: timeflux.nodes.zmq
+      class: Pub
+      params:
+        topic: camera
+
+  edges:
+    - source: camera
+      target: pub
+
+  rate: 0
+
+- id: ui
+  nodes:
+
+    # Subscribe to signals
+    # --------------------
+    - id: sub
+      module: timeflux.nodes.zmq
+      class: Sub
+      params:
+        topics: [camera, eeg, bandpass]
+
+    # Define apps for feedback
+    # ------------------------
+    - id: ui
+      module: timeflux_ui.nodes.ui
+      class: UI
+
+    - id: pub_events
+      module: timeflux.nodes.zmq
+      class: Pub
+      params:
+        topic: events
+
+
+  edges:
+    - source: sub:camera
+      target: ui:camera
+    - source: sub:eeg
+      target: ui:eeg
+    - source: sub:mask_saturation
+      target: ui:mask_saturation
+    - source: ui:events
+      target: pub_events 
+
+  rate: 10

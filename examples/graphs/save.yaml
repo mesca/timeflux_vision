@@ -1,0 +1,25 @@
+graphs:
+  - id: save
+    nodes:
+      - id: sub
+        module: timeflux.nodes.zmq
+        class: Sub
+        params:
+          topics: [eeg, camera, events ]
+      - id: save
+        module: timeflux.nodes.hdf5
+        class: Save
+        params:
+          path: data
+          min_itemsize: 1000
+    edges:
+      - source: sub:eeg
+        target: save:eeg # will be saved in hdf( key '/eeg'
+
+      - source: sub:camera
+        target: save:camera # will be saved in hdf( key '/camera' camera = pd.read_hdf §file, /camera
+
+      - source: sub:events
+        target: save:events
+        
+    rate: 1 # save stuff once per second
